@@ -307,7 +307,12 @@ class SiriProxy::Connection < EventMachine::Connection
     puts "[Info - #{self.name}] Received Object: #{object["class"]}" if $LOG_LEVEL == 1
     puts "[Info - #{self.name}] Received Object: #{object["class"]} (group: #{object["group"]})" if $LOG_LEVEL == 2
     puts "[Info - #{self.name}] Received Object: #{object["class"]} (group: #{object["group"]}, ref_id: #{object["refId"]}, ace_id: #{object["aceId"]})" if $LOG_LEVEL > 2
-    pp object if $LOG_LEVEL > 3
+
+    if object["class"] == "SpeechPacket"
+      pp object if $LOG_LEVEL > 5
+    else
+      pp object if $LOG_LEVEL > 3
+    end
 
     #keeping this for filters
     new_obj = received_object(object)
