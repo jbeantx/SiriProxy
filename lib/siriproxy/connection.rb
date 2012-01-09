@@ -243,6 +243,16 @@ class SiriProxy::Connection < EventMachine::Connection
       return nil
     end
 
+    # warnings/safeguards - based on code from fopina branch
+    if @faux == true
+      if object["class"] == "CreateAssistant"
+        puts "[Warning] A non-4S device is attempting to create a new assistant. This device either requires proper configuration or the cached session has expired."
+      elsif object["class"] == "DestroyAssistant"
+        puts "[Warning] Dropping DestroyAssistant packet from non-4S."
+        return nil
+      end
+    end
+
     if object["properties"] != nil
       if object["properties"]["sessionValidationData"] != nil
         if @faux == false
