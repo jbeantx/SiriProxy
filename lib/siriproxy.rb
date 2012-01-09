@@ -17,7 +17,7 @@ class SiriProxy
       begin
         puts "Starting SiriProxy on port #{$APP_CONFIG.port}.."
         EventMachine::start_server('0.0.0.0', $APP_CONFIG.port, SiriProxy::Connection::Iphone) { |conn|
-          $stderr.puts "start conn #{conn.inspect}"
+          # $stderr.puts "start conn #{conn.inspect}"
           conn.plugin_manager = SiriProxy::PluginManager.new()
           conn.plugin_manager.iphone_conn = conn
         }
