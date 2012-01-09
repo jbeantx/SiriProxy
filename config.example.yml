@@ -1,5 +1,18 @@
 port: 443
 log_level: 1
+
+# E-mail settings - Send notification when a 4S connects and authentication keys are renewed
+mail_notifications_enabled: 0 # 1=enabled, 0=disabled
+mail_from: from@host.com # required
+mail_to: to@host.com # required
+mail_subject: SiriProxy # defaults to SiriProxy
+mail_domain: gmail.com # domain of the mail sender, defaults to ENV["HOSTNAME"]
+mail_server: smtp.gmail.com # hostname/ip address of SMTP server, defaults to localhost
+mail_server_port: 587 # port number for SMTP server, defaults to 25
+mail_secure: 1 # use starttls when sending message (required for Gmail)
+mail_username: username@gmail.com # credentials for SMTP server, required
+mail_password: password # credentials for SMTP server, required
+
 plugins:
     # NOTE: run bundle after changing plugin configurations to update required gems
 

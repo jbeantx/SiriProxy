@@ -1,5 +1,6 @@
 require 'cfpropertylist'
 require 'siriproxy/interpret_siri'
+require 'net/smtp'
 
 class SiriProxy::Connection < EventMachine::Connection
   include EventMachine::Protocols::LineText2
@@ -60,6 +61,31 @@ class SiriProxy::Connection < EventMachine::Connection
 
     puts map
     map
+  end
+
+  # Mail notifications when a 4S "renews" authentication keys - based on code from fopina branch
+  def mail_notification(body)
+    from = $APP_CONFIG.mail_from
+    to = $APP_CONFIG.mail_to
+    subj = $APP_CONFIG.mail_subject
+    domain = $APP_CONFIG.mail_domain
+    host = $APP_CONFIG.mail_server
+    port = $APP_CONFIG.mail_server_port.to_i
+    usetls = $APP_CONFIG.mail_secure.to_i
+    user = $APP_CONFIG.mail_username
+    pw = $APP_CONFIG.mail_password
+    subj = "SiriProxy" if subj == nil
+    domain = ENV["HOSTNAME"] if domain == nil
+    host = "localhost" if host == nil
+    port = 25 if port == nil
+    msg = "From: #{from}\nTo: #{to}\nSubject: #{subj}\n\n#{body}"
+    if from != nil and to != nil and user != nil and pw != nil
+      smtp = Net::SMTP.new host, port
+      smtp.enable_starttls if usetls == 1
+      smtp.start(domain, user, pw, :login) do |smtp|
+        smtp.send_message msg, from, to
+      end
+    end
   end
 
   def ssl_handshake_completed
@@ -222,6 +248,10 @@ class SiriProxy::Connection < EventMachine::Connection
         if @faux == false
           # We're on a 4S
           data = object["properties"]["sessionValidationData"].unpack('H*').join("")
+          if data != @auth_data["session_data"] # If session_data has changed since it was last cached
+            mail_notification("An iPhone 4S device just connected and new authentication keys were saved.") if $APP_CONFIG.mail_notifications_enabled.to_i == 1
+            puts "[Info] iPhone 4S device connected. Session info has not been previously cached or has changed. Writing to session_data file."
+          end
           write_relative_file("~/.siriproxy/session_data", data)
         else
           if @auth_data == nil
