@@ -107,6 +107,8 @@ class SiriProxy::Connection < EventMachine::Connection
         @faux = false
       else
         puts "[Warning] Non-4S device connected."
+        line = "User-Agent: Assistant(iPhone/iPhone4,1; iPhone OS/5.0.1/9A405) Ace/1.0" #Spoof iPhone 4S User-Agent
+        puts "[Spoof - #{self.name}] #{line}"
         @faux = true
       end
     end
