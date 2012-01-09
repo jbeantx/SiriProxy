@@ -1,8 +1,13 @@
 #!/bin/sh
 
 #################################################################
-# Put this in your ~/SiriProxy directory &
-# Run with rvmsudo sh siriproxy.sh {start|keepalive|stop}
+# Modified script from methoddk to run SiriProxy in the background
+# and auto-restart if it crashes
+#
+# This file should be kept in your ~/SiriProxy directory.
+#
+# Syntax:
+# rvmsudo sh siriproxy.sh {start|keepalive|stop}
 #
 # start will run SiriProxy in the background
 #
@@ -10,17 +15,14 @@
 # is up, and if not, restarts it, then confirms it is indeed 
 # back up and running.
 #
-# keep alive *should* go to background as well if you run as
+# keepalive can also be started in the background if you run with:
 # rvmsudo sh siriproxy.sh keepalive 2>&1> ~/.siriproxy/keepalive.log &
 #
-# if you need stop explained, get away from the keyboard and take
-# cover under an interior doorway, quick.
-#
-# all logs are in ~/SiriProxy, check keepalive.log for server status
-# and proxy.out & proxy.err for SiriProxy output.
+# logs are stored in ~/.siriproxy (check keepalive.log for server
+# status and debug.log & error.log for SiriProxy output)
 #################################################################
 
-START="rvmsudo siriproxy server 1> ~/.siriproxy/debug.log 2> ~/.siriproxy/error.log &"
+START="rvmsudo siriproxy server 1>> ~/.siriproxy/debug.log 2>> ~/.siriproxy/error.log &"
 
 case $1 in
 start)
