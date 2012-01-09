@@ -1,8 +1,14 @@
+require 'time'
+
 #####
   # This is the connection to the iPhone
 #####
 class SiriProxy::Connection::Iphone < SiriProxy::Connection
   def initialize
+    puts "-------------------------"
+    t = Time.now
+    puts t.localtime
+    puts "-------------------------"
     puts "Create server for iPhone connection"
     super
     self.name = "iPhone"
