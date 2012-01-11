@@ -85,6 +85,7 @@ class SiriProxy::Connection < EventMachine::Connection
       smtp.start(domain, user, pw, :login) do |smtp|
         smtp.send_message msg, from, to
       end
+      puts "[Info] Mail notification sent to #{to}."
     end
   end
 
@@ -103,12 +104,12 @@ class SiriProxy::Connection < EventMachine::Connection
       self.processed_headers = true
     elsif line.match(/^User-Agent:/)
       if line.match(/iPhone4,1/)
-        puts "[Warning] 4S device connected. Keys will be saved."
+        puts "[Info] 4S device connected. Keys will be saved."
         @faux = false
       else
         puts "[Warning] Non-4S device connected."
         line = "User-Agent: Assistant(iPhone/iPhone4,1; iPhone OS/5.0.1/9A405) Ace/1.0" #Spoof iPhone 4S User-Agent
-        puts "[Spoof - #{self.name}] #{line}"
+        puts "[Spoof - #{self.name}] #{line}" if $LOG_LEVEL > 2
         @faux = true
       end
     end
@@ -262,9 +263,9 @@ class SiriProxy::Connection < EventMachine::Connection
           data = object["properties"]["sessionValidationData"].unpack('H*').join("")
           if data != @auth_data["session_data"] # If session_data has changed since it was last cached
             mail_notification("An iPhone 4S device just connected and new authentication keys were saved.") if $APP_CONFIG.mail_notifications_enabled.to_i == 1
-            puts "[Info] iPhone 4S device connected. Session info has not been previously cached or has changed. Writing to session_data file."
+            puts "[Info] iPhone 4S device connected. Session info was not already cached or has changed. Writing to session_data file."
+            write_relative_file("~/.siriproxy/session_data", data)
           end
-          write_relative_file("~/.siriproxy/session_data", data)
         else
           if @auth_data == nil
             puts "[Error] No session data available."
@@ -279,7 +280,9 @@ class SiriProxy::Connection < EventMachine::Connection
         if @faux == false
           # We're on a 4S
           data = object["properties"]["speechId"]
-          write_relative_file("~/.siriproxy/speech_id", data)
+          if data != @auth_data["speech_id"] # If speech_id has changed since it was last cached
+            write_relative_file("~/.siriproxy/speech_id", data)
+          end
         else
           if @auth_data == nil
             puts "[Error] No speech id available."
@@ -294,7 +297,9 @@ class SiriProxy::Connection < EventMachine::Connection
         if @faux == false
           # We're on a 4S
           data = object["properties"]["assistantId"]
-          write_relative_file("~/.siriproxy/assistant_id", data)
+          if data != @auth_data["assistant_id"] # If assistant_id has changed since it was last cached
+            write_relative_file("~/.siriproxy/assistant_id", data)
+          end
         else
           if @auth_data == nil
             puts "[Error] No assistant id available."
